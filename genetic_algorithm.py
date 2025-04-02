@@ -55,40 +55,49 @@ def create_individual(shapes_per_image):
     return creator.Individual([create_shape() for _ in range(shapes_per_image)])
 
 def mutate(individual, mutation_rate):
-    """Mutate an individual by modifying its shapes."""
+    """More diverse mutation with larger occasional jumps"""
     for i in range(len(individual)):
         if random.random() < mutation_rate:
             shape = individual[i].copy()
-            mutation_type = random.choice(['position', 'size', 'color'])
             
-            if mutation_type == 'position':
+            # 10% chance for a completely new shape
+            if random.random() < 0.1:
+                individual[i] = create_shape()
+                continue
+                
+            mutation_type = random.choice(['position', 'size', 'color', 'all'])
+            
+            # Larger mutations occasionally
+            mutation_scale = 0.3 if random.random() < 0.1 else 0.1
+            
+            if mutation_type in ['position', 'all']:
                 if shape['type'] in ['circle', 'rect']:
-                    shape['x'] = np.clip(shape['x'] + random.uniform(-0.1, 0.1), 0, 1)
-                    shape['y'] = np.clip(shape['y'] + random.uniform(-0.1, 0.1), 0, 1)
+                    shape['x'] = np.clip(shape['x'] + random.uniform(-mutation_scale, mutation_scale), 0, 1)
+                    shape['y'] = np.clip(shape['y'] + random.uniform(-mutation_scale, mutation_scale), 0, 1)
                 elif shape['type'] == 'line':
-                    shape['x1'] = np.clip(shape['x1'] + random.uniform(-0.1, 0.1), 0, 1)
-                    shape['y1'] = np.clip(shape['y1'] + random.uniform(-0.1, 0.1), 0, 1)
-                    shape['x2'] = np.clip(shape['x2'] + random.uniform(-0.1, 0.1), 0, 1)
-                    shape['y2'] = np.clip(shape['y2'] + random.uniform(-0.1, 0.1), 0, 1)
+                    shape['x1'] = np.clip(shape['x1'] + random.uniform(-mutation_scale, mutation_scale), 0, 1)
+                    shape['y1'] = np.clip(shape['y1'] + random.uniform(-mutation_scale, mutation_scale), 0, 1)
+                    shape['x2'] = np.clip(shape['x2'] + random.uniform(-mutation_scale, mutation_scale), 0, 1)
+                    shape['y2'] = np.clip(shape['y2'] + random.uniform(-mutation_scale, mutation_scale), 0, 1)
                     
-            elif mutation_type == 'size':
+            if mutation_type in ['size', 'all']:
                 if shape['type'] == 'circle':
-                    shape['radius'] = np.clip(shape['radius'] + random.uniform(-0.05, 0.05), 0.01, 0.3)
+                    shape['radius'] = np.clip(shape['radius'] + random.uniform(-mutation_scale, mutation_scale), 0.01, 0.4)
                 elif shape['type'] == 'rect':
-                    shape['w'] = np.clip(shape['w'] + random.uniform(-0.05, 0.05), 0.01, 0.4)
-                    shape['h'] = np.clip(shape['h'] + random.uniform(-0.05, 0.05), 0.01, 0.4)
+                    shape['w'] = np.clip(shape['w'] + random.uniform(-mutation_scale, mutation_scale), 0.01, 0.5)
+                    shape['h'] = np.clip(shape['h'] + random.uniform(-mutation_scale, mutation_scale), 0.01, 0.5)
                 elif shape['type'] == 'line':
-                    shape['width'] = np.clip(shape['width'] + random.randint(-2, 2), 1, 8)
+                    shape['width'] = np.clip(shape['width'] + random.randint(-4, 4), 1, 10)
                     
-            elif mutation_type == 'color':
+            if mutation_type in ['color', 'all']:
+                color_shift = random.randint(-80, 80) if random.random() < 0.3 else random.randint(-30, 30)
                 shape['color'] = (
-                    np.clip(shape['color'][0] + random.randint(-50, 50), 0, 255),
-                    np.clip(shape['color'][1] + random.randint(-50, 50), 0, 255),
-                    np.clip(shape['color'][2] + random.randint(-50, 50), 0, 255)
+                    np.clip(shape['color'][0] + color_shift, 0, 255),
+                    np.clip(shape['color'][1] + color_shift, 0, 255),
+                    np.clip(shape['color'][2] + color_shift, 0, 255)
                 )
             
             individual[i] = shape
-    # DEAP expects mutation functions to return a tuple.
     return individual,
 
 def cxTwoPoint(ind1, ind2):
@@ -114,5 +123,6 @@ def cluster_individuals(population, n_clusters):
         avg_color = np.mean([np.mean(s['color']) for s in ind])
         avg_pos = np.mean([s.get('x', 0.5) for s in ind] + [s.get('y', 0.5) for s in ind])
         features.append([avg_color, avg_pos])
-    kmeans = KMeans(n_clusters=n_clusters)
+    kmeans = KMeans(n_clusters=n_clusters, n_init=10, random_state=42)
+    print('kmeans predictor:', kmeans.fit_predict(features))
     return kmeans.fit_predict(features)

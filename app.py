@@ -13,12 +13,13 @@ from genetic_algorithm import (
 import math
 
 # Constants
-POPULATION_SIZE = 16
+POPULATION_SIZE = 100
+USER_SELECTION_SIZE = 5
 # Adjust grid size dynamically (smallest integer >= sqrt(POPULATION_SIZE))
-GRID_SIZE = math.ceil(POPULATION_SIZE ** 0.5)
+GRID_SIZE = math.ceil(USER_SELECTION_SIZE ** 0.5)
 WIDTH, HEIGHT = 1200, 800
 SHAPES_PER_IMAGE = 8
-MUTATION_RATE = 0.4
+MUTATION_RATE = 0.5
 SPECIES_COUNT = 4
 PADDING = 5
 
@@ -87,7 +88,7 @@ class EvolutionApp:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
-            elif event.type == pygame.MOUSEBUTTONDOWN:
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 x, y = event.pos
                 if self.buttons['save'].collidepoint(x, y):
                     self.handle_save_button()
@@ -126,14 +127,18 @@ class EvolutionApp:
 
     def create_next_generation(self):
         # Assign fitness based on selections.
-        for ind in self.population:
-            ind.fitness.values = (0.0,)
-        for idx in self.selected_indices:
-            self.population[idx].fitness.values = (1.0,)
+        # for ind in self.population:
+        #     ind.fitness.values = (0.0,)
+        # for idx in self.selected_indices:
+        #     self.population[idx].fitness.values = (1.0,)
+
+        selection_counts = {idx: self.selected_indices.count(idx) for idx in set(self.selected_indices)}
+        for idx, count in selection_counts.items():
+            self.population[idx].fitness.values = (count / max(selection_counts.values()),)  # Normalize to [0, 1]
 
         # Speciation using clustering.
         clusters = cluster_individuals(self.population, SPECIES_COUNT)
-        
+
         # Select survivors from each species.
         survivors = []
         for cluster_id in range(SPECIES_COUNT):
