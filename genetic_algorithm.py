@@ -10,7 +10,7 @@ if not hasattr(creator, "Individual"):
     creator.create("Individual", list, fitness=creator.FitnessMax)
 
 # Constants for genetic operations
-SHAPE_TYPES = ['circle', 'rect', 'line']
+SHAPE_TYPES = ['circle', 'rect', 'line', 'triangle', 'polygon', 'ellipse']
 COLOR_RANGE = (0, 255)
 
 def create_shape():
@@ -49,10 +49,40 @@ def create_shape():
             'width': random.randint(1, 5),
             'color': color
         }
+    elif shape_type == 'triangle':
+        return {
+            'type': 'triangle',
+            'x1': random.uniform(0, 1),
+            'y1': random.uniform(0, 1),
+            'x2': random.uniform(0, 1),
+            'y2': random.uniform(0, 1),
+            'x3': random.uniform(0, 1),
+            'y3': random.uniform(0, 1),
+            'color': color
+        }
+    elif shape_type == 'polygon':
+        num_points = random.randint(3, 6)  # Random number of points for the polygon
+        points = [(random.uniform(0.4, 0.6), random.uniform(0.4, 0.6)) for _ in range(num_points)]
+        return {
+            'type': 'polygon',
+            'points': points,
+            'color': color
+        }
+    elif shape_type == 'ellipse':
+        x1, x2 = sorted([random.uniform(0, 1), random.uniform(0, 1)])
+        y1, y2 = sorted([random.uniform(0, 1), random.uniform(0, 1)])
+        return {
+            'type': 'ellipse',
+            'x1': x1,
+            'y1': y1,
+            'x2': x2,
+            'y2': y2,
+            'color': color
+        }
 
 def create_individual(shapes_per_image):
     """Create an individual (a single image) with random shapes."""
-    return creator.Individual([create_shape() for _ in range(shapes_per_image)])
+    return creator.Individual([create_shape() for _ in range(random.randint(2, shapes_per_image))])
 
 def mutate(individual, mutation_rate):
     """More diverse mutation with larger occasional jumps"""
@@ -124,5 +154,4 @@ def cluster_individuals(population, n_clusters):
         avg_pos = np.mean([s.get('x', 0.5) for s in ind] + [s.get('y', 0.5) for s in ind])
         features.append([avg_color, avg_pos])
     kmeans = KMeans(n_clusters=n_clusters, n_init=10, random_state=42)
-    print('kmeans predictor:', kmeans.fit_predict(features))
     return kmeans.fit_predict(features)
