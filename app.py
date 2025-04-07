@@ -235,10 +235,10 @@ class EvolutionApp:
             self.population[idx].fitness.values = (0.7 * normalized_count + 0.3 * diversity_factor,)
             print(self.population[idx].fitness.values)
 
-        for idx, individual in enumerate(self.population):
-            if idx not in selection_counts:
-                diversity_score = self.calculate_diversity(individual)
-                self.population[idx].fitness.values = (diversity_score*0.1,)
+        # for idx, individual in enumerate(self.population):
+        #     if idx not in selection_counts:
+        #         diversity_score = self.calculate_diversity(individual)
+        #         self.population[idx].fitness.values = (diversity_score*0.1,)
 
         # Speciation using clustering.
         clusters = cluster_individuals(self.population, SPECIES_COUNT)
