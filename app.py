@@ -35,17 +35,18 @@ class EvolutionApp:
         self.clock = pygame.time.Clock()
         self.batch_size = USER_SELECTION_SIZE  # Images per screen
         self.total_batches = (POPULATION_SIZE + self.batch_size - 1) // self.batch_size
-        self.clear_history_folder()
         self.init_deap()
         self.init_ui()
 
     def init_deap(self):
+        self.clear_history_folder()
         self.generation = 0
         self.current_batch = 0
         self.selected_indices = []
         self.selection_mode = 'generation'
         self.running = True
         self.selected_history = []
+        self.selected_history_all = []
         self.stopped = False
         self.best_individuals = []
         self.toolbox = base.Toolbox()
@@ -119,7 +120,6 @@ class EvolutionApp:
     def handle_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                self.save_selected_history()
                 self.running = False
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 x, y = event.pos
@@ -128,6 +128,7 @@ class EvolutionApp:
                 elif self.buttons['choose next'].collidepoint(x, y):
                     self.handle_image_click(x, y, choose=False)
                 elif self.buttons['stop'].collidepoint(x, y):
+                    self.save_selected_history()
                     self.stop_evolution()
                 elif self.buttons['save best'].collidepoint(x, y):
                     self.save_best_individuals()
@@ -151,6 +152,7 @@ class EvolutionApp:
                 if start_idx + idx not in self.selected_indices:
                     if choose:
                         self.selected_indices.append(start_idx + idx)
+                        self.save_image(self.generation, start_idx + idx, self.population[start_idx + idx])
                     self.current_batch += 1  # Move to the next batch
                     if self.current_batch >= self.total_batches:
                         self.create_next_generation()  # Process the next generation
@@ -158,12 +160,8 @@ class EvolutionApp:
     def create_next_generation(self):
         selected_individuals = [self.population[idx] for idx in self.selected_indices]
         self.selected_history.append(selected_individuals)
-        
-        # store only last 3 generation history that user has choosen
-        if len(self.selected_history) > 3:
-            self.selected_history.pop(0)
 
-        selected_individuals = [ind for generation in self.selected_history for ind in generation]
+        selected_individuals = [ind for generation in self.selected_history[-3:] for ind in generation]
 
         # Assign fitness based on user-selected individuals
         for ind in self.population:
@@ -217,14 +215,18 @@ class EvolutionApp:
         """Save the best 6 individuals as images."""
         for i, ind in enumerate(self.best_individuals):
             img = self.genome_to_image(ind, (1024, 768))
-            img.save(f"result/best_ind_{i + 1}.png")
+            img.save(f"result/best_ind_{i}.png")
         print("Best 6 individuals saved.")
 
-    def save_selected_history(self):
-        for gen_idx, generation in enumerate(self.selected_history):
-            for ind_idx, individual in enumerate(generation):
-                img = self.genome_to_image(individual, (1024, 768))
-                img.save(f"history/gen{gen_idx + 1}_ind{ind_idx + 1}.png")
+    # def save_selected_history(self):
+    #     for gen_idx, generation in enumerate(self.selected_history):
+    #         for ind_idx, individual in enumerate(generation):
+    #             img = self.genome_to_image(individual, (1024, 768))
+    #             img.save(f"history/gen{gen_idx + 1}_ind{ind_idx + 1}.png")
+
+    def save_image(self, gen, idx, individual):
+        img = self.genome_to_image(individual, (1024, 768))
+        img.save(f"history/gen{gen}_ind{idx}.png")
 
     def clear_history_folder(self):
         """Clear all files from the history folder."""
