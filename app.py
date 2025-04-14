@@ -27,7 +27,7 @@ SHAPES_PER_IMAGE = 8                # Maximum shapes per generated image
 CROSSOVER_RATE = 0.8                # Probability of crossover between individuals
 MUTATION_RATE = 0.2                 # Probability of mutation
 NEW_SHAPE_CHANCE = 0.2              # Chance to add a new shape during mutation
-SPECIES_COUNT = 4                   # Number of species for speciation/clustering
+SPECIES_COUNT = 6                   # Number of species for speciation/clustering
 PADDING = 10                        # UI padding between elements
 
 class EvolutionApp:
