@@ -70,7 +70,7 @@ class EvolutionApp:
         self.buttons = {
             'reset': pygame.Rect(120, HEIGHT - 50, 100, 40),
             'choose next': pygame.Rect(WIDTH // 2 - 70, HEIGHT - 50, 140, 40),
-            'stop evolution': pygame.Rect(WIDTH // 4 * 3 - 50, HEIGHT - 50, 100, 40)
+            'stop evolution': pygame.Rect(WIDTH // 4 * 3 - 50, HEIGHT - 50, 150, 40)
         }
 
     def genome_to_image(self, genome, img_size):
