@@ -6,7 +6,7 @@ This project is a visual evolutionary algorithm that creates unique abstract ima
 
 At each generation, a grid of generated images will appear. You can click to select the one you like most—or select nothing at all. Once a choice is made (or skipped), the next generation will be created based on your input. A progress bar at the bottom of the screen shows how close you are to generating the next batch of evolved images.
 
-![alt text](https://github.com/sarrtr/evolutionary-art-generation/blob/main/assets/app.gif)
+![alt text](assets/app.gif)
 
 ## Functionality
 
